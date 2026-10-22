@@ -45,7 +45,7 @@ describe("normalizeOutcomeFields", () => {
   it("rejects empty outcome (time-only needs no row)", () => {
     expect(normalizeOutcomeFields({})).toEqual({
       error:
-        "Add text, a number, or a link — or skip outcome and keep time only",
+        "Add a process & result summary — or skip outcome and keep time only",
     });
   });
 

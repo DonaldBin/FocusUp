@@ -49,51 +49,59 @@ export default async function Home() {
   const reviewPrompt =
     user && !empty ? await getHomeReviewPrompt() : null;
 
+  const signedInBusy = Boolean(user && !empty);
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
-      <h1 className="text-3xl font-bold">FocusUp</h1>
-      <p className="text-base opacity-70 text-center max-w-sm">
-        Focus areas + weekly decide
-      </p>
-      {user ? (
-        empty ? (
-          <HomeEmptyState />
+    <main
+      className={`min-h-dvh w-full flex flex-col items-center px-4 sm:px-6 gap-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] ${
+        signedInBusy ? "justify-start py-6 sm:py-8" : "justify-center py-8"
+      }`}
+    >
+      <div className="w-full max-w-md mx-auto flex flex-col items-center gap-4">
+        <h1 className="text-3xl font-bold">FocusUp</h1>
+        <p className="text-base opacity-70 text-center">
+          Focus areas + weekly decide
+        </p>
+        {user ? (
+          empty ? (
+            <HomeEmptyState />
+          ) : (
+            <>
+              <p className="text-sm opacity-80 text-center break-all">
+                Signed in as {user.email ?? user.id}
+              </p>
+              <OfflineSyncBoot />
+              {activeSession ? (
+                <ActiveTimerBanner session={activeSession} focuses={focuses} />
+              ) : null}
+              <RecentFocusShortcuts
+                focuses={recentShortcuts}
+                activeSession={activeSession}
+              />
+              <FocusList focuses={focuses} activeSession={activeSession} />
+              <ManualEntryForm focuses={focuses} />
+              {reviewPrompt ? (
+                <PendingReviewBanner prompt={reviewPrompt} />
+              ) : null}
+              <OutcomeForm focuses={focuses} />
+              <RecentEntries entries={recentEntries} focuses={focuses} />
+              <RecentOutcomes outcomes={recentOutcomes} focuses={focuses} />
+              <div className="flex flex-wrap justify-center gap-2 w-full">
+                <Link href="/focuses/new" className="btn btn-primary">
+                  Create a focus
+                </Link>
+                <Link href={SETTINGS_PATH} className="btn btn-outline">
+                  Settings
+                </Link>
+              </div>
+            </>
+          )
         ) : (
-          <>
-            <p className="text-sm opacity-80 text-center">
-              Signed in as {user.email ?? user.id}
-            </p>
-            <OfflineSyncBoot />
-            {reviewPrompt ? (
-              <PendingReviewBanner prompt={reviewPrompt} />
-            ) : null}
-            {activeSession ? (
-              <ActiveTimerBanner session={activeSession} focuses={focuses} />
-            ) : null}
-            <RecentFocusShortcuts
-              focuses={recentShortcuts}
-              activeSession={activeSession}
-            />
-            <FocusList focuses={focuses} activeSession={activeSession} />
-            <ManualEntryForm focuses={focuses} />
-            <OutcomeForm focuses={focuses} recentEntries={recentEntries} />
-            <RecentEntries entries={recentEntries} focuses={focuses} />
-            <RecentOutcomes outcomes={recentOutcomes} focuses={focuses} />
-            <div className="flex flex-wrap justify-center gap-2">
-              <Link href="/focuses/new" className="btn btn-primary">
-                Create a focus
-              </Link>
-              <Link href={SETTINGS_PATH} className="btn btn-outline">
-                Settings
-              </Link>
-            </div>
-          </>
-        )
-      ) : (
-        <Link href={LOGIN_PATH} className="btn btn-primary btn-sm">
-          Sign in with Google
-        </Link>
-      )}
+          <Link href={LOGIN_PATH} className="btn btn-primary btn-sm">
+            Sign in with Google
+          </Link>
+        )}
+      </div>
     </main>
   );
 }

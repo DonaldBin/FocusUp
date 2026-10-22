@@ -2,32 +2,28 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import type { FocusRow, TimeEntryRow } from "@/lib/db/types";
+import type { FocusRow } from "@/lib/db/types";
 import { mutateOrQueue } from "@/lib/sync/mutateOrQueue";
 import { QUEUED_OFFLINE_MESSAGE } from "@/lib/sync/types";
 
 type Props = {
   focuses: FocusRow[];
-  recentEntries: TimeEntryRow[];
+  /** Kept for call-site compatibility; linking to a time entry is no longer shown. */
+  recentEntries?: unknown;
 };
 
-export function OutcomeForm({ focuses, recentEntries }: Props) {
+export function OutcomeForm({ focuses }: Props) {
   const router = useRouter();
   const usable = focuses.filter((f) => f.status !== "ended");
   const [open, setOpen] = useState(false);
   const [focusId, setFocusId] = useState(usable[0]?.id ?? "");
-  const [bodyText, setBodyText] = useState("");
-  const [numberValue, setNumberValue] = useState("");
-  const [url, setUrl] = useState("");
-  const [timeEntryId, setTimeEntryId] = useState("");
+  const [summary, setSummary] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   if (usable.length === 0) {
     return null;
   }
-
-  const entriesForFocus = recentEntries.filter((e) => e.focus_id === focusId);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -42,10 +38,10 @@ export function OutcomeForm({ focuses, recentEntries }: Props) {
         clientTimestamp,
         body: {
           focusId,
-          bodyText: bodyText.trim() || null,
-          numberValue: numberValue.trim() === "" ? null : numberValue,
-          url: url.trim() || null,
-          timeEntryId: timeEntryId || null,
+          bodyText: summary.trim() || null,
+          numberValue: null,
+          url: null,
+          timeEntryId: null,
         },
       });
       if (result.status === "error") {
@@ -53,18 +49,11 @@ export function OutcomeForm({ focuses, recentEntries }: Props) {
         return;
       }
       if (result.status === "queued") {
-        // Do not router.refresh() while offline — it reloads RSC and blanks the page.
         setError(result.message);
-        setBodyText("");
-        setNumberValue("");
-        setUrl("");
-        setTimeEntryId("");
+        setSummary("");
         return;
       }
-      setBodyText("");
-      setNumberValue("");
-      setUrl("");
-      setTimeEntryId("");
+      setSummary("");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save outcome");
@@ -90,18 +79,12 @@ export function OutcomeForm({ focuses, recentEntries }: Props) {
           onSubmit={onSubmit}
           className="space-y-3 border border-base-300 rounded-lg p-4"
         >
-          <p className="text-xs opacity-60 text-center">
-            Time-only is fine — skip this if you only logged time.
-          </p>
           <label className="form-control w-full">
             <span className="label-text">Focus</span>
             <select
               className="select select-bordered w-full"
               value={focusId}
-              onChange={(e) => {
-                setFocusId(e.target.value);
-                setTimeEntryId("");
-              }}
+              onChange={(e) => setFocusId(e.target.value)}
               required
             >
               {usable.map((f) => (
@@ -112,47 +95,15 @@ export function OutcomeForm({ focuses, recentEntries }: Props) {
             </select>
           </label>
           <label className="form-control w-full">
-            <span className="label-text">Text</span>
-            <input
-              className="input input-bordered w-full"
-              value={bodyText}
-              onChange={(e) => setBodyText(e.target.value)}
+            <span className="label-text">Process & result summary</span>
+            <textarea
+              className="textarea textarea-bordered w-full min-h-24"
+              value={summary}
+              onChange={(e) => setSummary(e.target.value)}
               maxLength={500}
+              placeholder="What you did and how it went"
+              required
             />
-          </label>
-          <label className="form-control w-full">
-            <span className="label-text">Number</span>
-            <input
-              type="number"
-              className="input input-bordered w-full"
-              value={numberValue}
-              onChange={(e) => setNumberValue(e.target.value)}
-            />
-          </label>
-          <label className="form-control w-full">
-            <span className="label-text">Link</span>
-            <input
-              type="url"
-              className="input input-bordered w-full"
-              placeholder="https://"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
-          </label>
-          <label className="form-control w-full">
-            <span className="label-text">Link to time entry (optional)</span>
-            <select
-              className="select select-bordered w-full"
-              value={timeEntryId}
-              onChange={(e) => setTimeEntryId(e.target.value)}
-            >
-              <option value="">None</option>
-              {entriesForFocus.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {new Date(e.start_at).toLocaleString()} · {e.source}
-                </option>
-              ))}
-            </select>
           </label>
           {error ? (
             <p

@@ -18,6 +18,7 @@ function toLocalInputValue(d: Date): string {
 export function ManualEntryForm({ focuses }: Props) {
   const router = useRouter();
   const usable = focuses.filter((f) => f.status !== "ended");
+  const [open, setOpen] = useState(false);
   const [focusId, setFocusId] = useState(usable[0]?.id ?? "");
   const [startAt, setStartAt] = useState(() =>
     toLocalInputValue(new Date(Date.now() - 30 * 60 * 1000)),
@@ -77,72 +78,89 @@ export function ManualEntryForm({ focuses }: Props) {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="w-full max-w-md space-y-3 border border-base-300 rounded-lg p-4"
-    >
-      <h2 className="text-sm font-semibold text-center">Add time (manual)</h2>
-      <label className="form-control w-full">
-        <span className="label-text">Focus</span>
-        <select
-          className="select select-bordered w-full"
-          value={focusId}
-          onChange={(e) => setFocusId(e.target.value)}
-          required
-        >
-          {usable.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="form-control w-full">
-        <span className="label-text">Start</span>
-        <input
-          type="datetime-local"
-          className="input input-bordered w-full"
-          value={startAt}
-          onChange={(e) => setStartAt(e.target.value)}
-          required
-        />
-      </label>
-      <label className="form-control w-full">
-        <span className="label-text">Duration (minutes)</span>
-        <input
-          type="number"
-          min={0}
-          step={1}
-          className="input input-bordered w-full"
-          value={durationMinutes}
-          onChange={(e) => setDurationMinutes(e.target.value)}
-          required
-        />
-      </label>
-      <label className="form-control w-full">
-        <span className="label-text">Note (optional)</span>
-        <input
-          className="input input-bordered w-full"
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
-          maxLength={200}
-        />
-      </label>
-      {error ? (
-        <p
-          className={
-            error === QUEUED_OFFLINE_MESSAGE
-              ? "text-sm opacity-70"
-              : "text-error text-sm"
-          }
-          role={error === QUEUED_OFFLINE_MESSAGE ? "status" : "alert"}
-        >
-          {error}
-        </p>
-      ) : null}
-      <button type="submit" className="btn btn-outline w-full" disabled={pending}>
-        {pending ? "Saving…" : "Add entry"}
+    <div className="w-full max-w-md space-y-2">
+      <button
+        type="button"
+        className="btn btn-ghost btn-sm w-full justify-between"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span>Add time (manual)</span>
+        <span className="opacity-60">{open ? "Hide" : "Show"}</span>
       </button>
-    </form>
+
+      {open ? (
+        <form
+          onSubmit={onSubmit}
+          className="space-y-3 border border-base-300 rounded-lg p-4"
+        >
+          <label className="form-control w-full">
+            <span className="label-text">Focus</span>
+            <select
+              className="select select-bordered w-full"
+              value={focusId}
+              onChange={(e) => setFocusId(e.target.value)}
+              required
+            >
+              {usable.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="form-control w-full">
+            <span className="label-text">Start</span>
+            <input
+              type="datetime-local"
+              className="input input-bordered w-full"
+              value={startAt}
+              onChange={(e) => setStartAt(e.target.value)}
+              required
+            />
+          </label>
+          <label className="form-control w-full">
+            <span className="label-text">Duration (minutes)</span>
+            <input
+              type="number"
+              min={0}
+              step={1}
+              className="input input-bordered w-full"
+              value={durationMinutes}
+              onChange={(e) => setDurationMinutes(e.target.value)}
+              required
+            />
+          </label>
+          <label className="form-control w-full">
+            <span className="label-text">Note (optional)</span>
+            <input
+              className="input input-bordered w-full"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={200}
+            />
+          </label>
+          {error ? (
+            <p
+              className={
+                error === QUEUED_OFFLINE_MESSAGE
+                  ? "text-sm opacity-70"
+                  : "text-error text-sm"
+              }
+              role={error === QUEUED_OFFLINE_MESSAGE ? "status" : "alert"}
+            >
+              {error}
+            </p>
+          ) : null}
+          <button
+            type="submit"
+            className="btn btn-outline w-full"
+            disabled={pending}
+          >
+            {pending ? "Saving…" : "Add entry"}
+          </button>
+        </form>
+      ) : null}
+    </div>
   );
 }

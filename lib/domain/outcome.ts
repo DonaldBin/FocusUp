@@ -76,7 +76,7 @@ export function normalizeOutcomeFields(input: {
     fields.url == null
   ) {
     return {
-      error: "Add text, a number, or a link — or skip outcome and keep time only",
+      error: "Add a process & result summary — or skip outcome and keep time only",
     };
   }
 

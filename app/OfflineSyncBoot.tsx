@@ -100,7 +100,7 @@ export function OfflineSyncBoot() {
 
   return (
     <div
-      className="w-full max-w-md space-y-2 border border-base-300 rounded-lg p-3 text-center"
+      className="w-full space-y-2 border border-base-300 rounded-lg p-3 text-center"
       role="status"
     >
       <p className="text-sm font-medium">

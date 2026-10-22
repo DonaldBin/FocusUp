@@ -54,17 +54,17 @@ export function RecentOutcomes({ outcomes, focuses }: Props) {
             className="border border-base-200 rounded-md p-2 space-y-1"
           >
             <p className="font-medium">{nameById.get(o.focus_id) ?? "Focus"}</p>
-            {o.body_text ? <p>{o.body_text}</p> : null}
-            {o.number_value != null ? <p>Number: {o.number_value}</p> : null}
-            {o.url ? (
-              <a
-                href={o.url}
-                className="link link-primary break-all"
-                target="_blank"
-                rel="noreferrer"
-              >
-                {o.url}
-              </a>
+            {o.body_text ? (
+              <p className="whitespace-pre-wrap">{o.body_text}</p>
+            ) : o.number_value != null || o.url ? (
+              <p className="opacity-70 text-xs">
+                {[
+                  o.number_value != null ? `Number: ${o.number_value}` : null,
+                  o.url,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
             ) : null}
             <button
               type="button"
