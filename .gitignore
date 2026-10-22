@@ -30,8 +30,15 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (keep example; never commit secrets)
 .env*
+!.env.example
+
+# local deploy artifacts / secrets
+*.tgz
+*.pem
+focusup-deploy.tgz
+focusup.env.partial
 
 # vercel
 .vercel
@@ -39,3 +46,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE
+.idea/
+.vscode/
