@@ -89,7 +89,7 @@ English UI throughout. Designed mobile-first.
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/OWNER/FocusUp.git
+git clone https://github.com/DonaldBin/FocusUp.git
 cd FocusUp
 npm install
 ```
