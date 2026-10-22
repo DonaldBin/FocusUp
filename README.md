@@ -63,7 +63,7 @@ English UI throughout. Designed mobile-first.
 - **Weekly review window** in *your* timezone + review weekday
 - **Investment summary** you can edit; append a week when ready
 - **CSV export** and **delete account**
-- **Offline sync queue** (simulate offline in the UI for testing)
+- **Offline sync queue** (auto-flush when back online; simulate offline only in local dev)
 - **PWA** — Add to Home Screen
 
 ---

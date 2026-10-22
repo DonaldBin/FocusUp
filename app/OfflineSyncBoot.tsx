@@ -6,7 +6,13 @@ import { flushSyncQueue } from "@/lib/sync/flush";
 import { isForceOffline, setForceOffline } from "@/lib/sync/offlineFlag";
 import { loadQueue } from "@/lib/sync/storage";
 
-/** Flushes the offline queue on mount and when the browser goes online. */
+const isDev = process.env.NODE_ENV === "development";
+
+/**
+ * Flushes the offline queue on mount and when the browser goes online.
+ * UI: silent in production when idle; show status only when there is
+ * pending work / errors. “Simulate offline” is development-only.
+ */
 export function OfflineSyncBoot() {
   const router = useRouter();
   const [pending, setPending] = useState(0);
@@ -54,7 +60,6 @@ export function OfflineSyncBoot() {
 
   useEffect(() => {
     refreshCount();
-    // Auto-flush once on mount if there is pending work.
     void flush();
 
     const onOnline = () => {
@@ -76,7 +81,6 @@ export function OfflineSyncBoot() {
     setForceOffline(next);
     setForceOfflineState(next);
     setError(null);
-    // Do not auto-flush here — let the user tap Sync now (avoids stuck Syncing…).
     setMessage(
       next
         ? "Offline ON — add an entry below"
@@ -87,24 +91,32 @@ export function OfflineSyncBoot() {
   }
 
   const canSync = !forceOffline && pending > 0;
+  const showPanel =
+    isDev || pending > 0 || forceOffline || Boolean(message) || Boolean(error);
+
+  if (!showPanel) {
+    return null;
+  }
 
   return (
     <div
       className="w-full max-w-md space-y-2 border border-base-300 rounded-lg p-3 text-center"
       role="status"
     >
-      <p className="text-sm font-medium">Offline sync</p>
+      <p className="text-sm font-medium">
+        {pending > 0 || forceOffline ? "Offline sync" : "Sync"}
+      </p>
       {forceOffline ? (
         <p className="text-xs text-warning">
           Simulate offline is ON — saves go to the local queue
         </p>
-      ) : (
+      ) : pending > 0 ? (
         <p className="text-xs opacity-60">
-          {pending > 0
-            ? `${pending} change(s) waiting to sync`
-            : "No pending changes"}
+          {pending} change(s) waiting to sync
         </p>
-      )}
+      ) : message || error ? null : isDev ? (
+        <p className="text-xs opacity-60">No pending changes</p>
+      ) : null}
       {message ? <p className="text-sm text-success">{message}</p> : null}
       {error ? (
         <p className="text-error text-xs" role="alert">
@@ -112,25 +124,29 @@ export function OfflineSyncBoot() {
         </p>
       ) : null}
       <div className="flex flex-wrap justify-center gap-2">
-        <button
-          type="button"
-          className={`btn btn-sm ${forceOffline ? "btn-warning" : "btn-outline"}`}
-          onClick={toggleForceOffline}
-        >
-          {forceOffline ? "Simulate offline: ON" : "Simulate offline"}
-        </button>
-        <button
-          type="button"
-          className="btn btn-sm btn-primary"
-          disabled={!canSync || syncing}
-          onClick={() => void flush()}
-        >
-          {syncing
-            ? "Syncing…"
-            : canSync
-              ? `Sync now (${pending})`
-              : "Sync now"}
-        </button>
+        {isDev ? (
+          <button
+            type="button"
+            className={`btn btn-sm ${forceOffline ? "btn-warning" : "btn-outline"}`}
+            onClick={toggleForceOffline}
+          >
+            {forceOffline ? "Simulate offline: ON" : "Simulate offline"}
+          </button>
+        ) : null}
+        {pending > 0 || forceOffline || isDev ? (
+          <button
+            type="button"
+            className="btn btn-sm btn-primary"
+            disabled={!canSync || syncing}
+            onClick={() => void flush()}
+          >
+            {syncing
+              ? "Syncing…"
+              : canSync
+                ? `Sync now (${pending})`
+                : "Sync now"}
+          </button>
+        ) : null}
       </div>
     </div>
   );
