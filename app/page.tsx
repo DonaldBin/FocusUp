@@ -23,6 +23,7 @@ import { PendingReviewBanner } from "./PendingReviewBanner";
 import { RecentEntries } from "./RecentEntries";
 import { RecentFocusShortcuts } from "./RecentFocusShortcuts";
 import { RecentOutcomes } from "./RecentOutcomes";
+import { SessionLiveSync } from "./SessionLiveSync";
 
 export default async function Home() {
   const supabase = await createServerSupabaseClient();
@@ -71,8 +72,13 @@ export default async function Home() {
                 Signed in as {user.email ?? user.id}
               </p>
               <OfflineSyncBoot />
+              <SessionLiveSync session={activeSession} />
               {activeSession ? (
-                <ActiveTimerBanner session={activeSession} focuses={focuses} />
+                <ActiveTimerBanner
+                  key={`${activeSession.focus_id}:${activeSession.start_at}`}
+                  session={activeSession}
+                  focuses={focuses}
+                />
               ) : null}
               <RecentFocusShortcuts
                 focuses={recentShortcuts}

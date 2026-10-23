@@ -22,9 +22,10 @@ export function ActiveTimerBanner({ session, focuses }: Props) {
   const staleHint = staleOpenSessionHint(startAt, now);
 
   useEffect(() => {
+    setNow(new Date());
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
-  }, []);
+  }, [session.start_at, session.focus_id]);
 
   return (
     <div className="w-full max-w-md space-y-2 text-center">
