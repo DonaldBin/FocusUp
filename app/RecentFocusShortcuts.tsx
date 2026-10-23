@@ -10,9 +10,28 @@ import { QUEUED_OFFLINE_MESSAGE } from "@/lib/sync/types";
 type Props = {
   focuses: FocusRow[];
   activeSession: ActiveSessionRow | null;
+  onSessionLocalChange?: (session: ActiveSessionRow | null) => void;
 };
 
-export function RecentFocusShortcuts({ focuses, activeSession }: Props) {
+function sessionFromResult(data: unknown): ActiveSessionRow | null {
+  if (typeof data !== "object" || data === null || !("session" in data)) {
+    return null;
+  }
+  const session = (data as { session: unknown }).session;
+  if (session === null) {
+    return null;
+  }
+  if (typeof session !== "object") {
+    return null;
+  }
+  return session as ActiveSessionRow;
+}
+
+export function RecentFocusShortcuts({
+  focuses,
+  activeSession,
+  onSessionLocalChange,
+}: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -46,6 +65,7 @@ export function RecentFocusShortcuts({ focuses, activeSession }: Props) {
         setError(result.message);
         return;
       }
+      onSessionLocalChange?.(sessionFromResult(result.data));
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not start");
@@ -77,6 +97,7 @@ export function RecentFocusShortcuts({ focuses, activeSession }: Props) {
         setError(result.message);
         return;
       }
+      onSessionLocalChange?.(sessionFromResult(result.data));
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not pause");

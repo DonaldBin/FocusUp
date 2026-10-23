@@ -7,7 +7,15 @@ import {
 
 export async function GET() {
   const session = await getActiveSessionForUser();
-  return NextResponse.json({ ok: true, session });
+  return NextResponse.json(
+    { ok: true, session },
+    {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+        Pragma: "no-cache",
+      },
+    },
+  );
 }
 
 export async function POST(request: Request) {

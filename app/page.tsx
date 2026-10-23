@@ -13,17 +13,16 @@ import { isOnboardingComplete } from "@/lib/domain/onboarding";
 import { isHomeEmpty } from "@/lib/domain/homeEmpty";
 import { pickRecentFocuses } from "@/lib/domain/recentFocuses";
 import { LOGIN_PATH, ONBOARDING_PATH, SETTINGS_PATH } from "@/lib/auth/paths";
-import { ActiveTimerBanner } from "./ActiveTimerBanner";
-import { FocusList } from "./FocusList";
 import { HomeEmptyState } from "./HomeEmptyState";
+import { HomeTimingSection } from "./HomeTimingSection";
 import { ManualEntryForm } from "./ManualEntryForm";
 import { OfflineSyncBoot } from "./OfflineSyncBoot";
 import { OutcomeForm } from "./OutcomeForm";
 import { PendingReviewBanner } from "./PendingReviewBanner";
 import { RecentEntries } from "./RecentEntries";
-import { RecentFocusShortcuts } from "./RecentFocusShortcuts";
 import { RecentOutcomes } from "./RecentOutcomes";
-import { SessionLiveSync } from "./SessionLiveSync";
+
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const supabase = await createServerSupabaseClient();
@@ -72,19 +71,11 @@ export default async function Home() {
                 Signed in as {user.email ?? user.id}
               </p>
               <OfflineSyncBoot />
-              <SessionLiveSync session={activeSession} />
-              {activeSession ? (
-                <ActiveTimerBanner
-                  key={`${activeSession.focus_id}:${activeSession.start_at}`}
-                  session={activeSession}
-                  focuses={focuses}
-                />
-              ) : null}
-              <RecentFocusShortcuts
-                focuses={recentShortcuts}
-                activeSession={activeSession}
+              <HomeTimingSection
+                initialSession={activeSession}
+                focuses={focuses}
+                recentShortcuts={recentShortcuts}
               />
-              <FocusList focuses={focuses} activeSession={activeSession} />
               <ManualEntryForm focuses={focuses} />
               {reviewPrompt ? (
                 <PendingReviewBanner prompt={reviewPrompt} />
