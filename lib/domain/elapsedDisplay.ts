@@ -3,6 +3,7 @@
  * Elapsed = now − startAt (wall clock). Never auto-stops.
  */
 
+import { serverNowFrom } from "@/lib/domain/serverClock";
 import { isStaleOpenSession } from "@/lib/domain/timeEntry";
 
 export const STALE_OPEN_SESSION_HINT =
@@ -10,6 +11,23 @@ export const STALE_OPEN_SESSION_HINT =
 
 export function elapsedMs(startAt: Date, now: Date): number {
   return Math.max(0, now.getTime() - startAt.getTime());
+}
+
+/**
+ * Elapsed time for a live timer whose `startAt` was written by the server.
+ *
+ * Raw `elapsedMs(startAt, new Date())` mixes two clocks: a client running
+ * 15s fast shows 0:15 the instant a session starts. `offsetMs` (client +
+ * offset ≈ server time, see `lib/domain/serverClock`) puts both readings on
+ * the server clock, so the timer starts at 0:00 and stays in step across
+ * devices.
+ */
+export function liveElapsedMs(
+  startAt: Date,
+  clientNow: Date,
+  offsetMs: number,
+): number {
+  return elapsedMs(startAt, serverNowFrom(clientNow, offsetMs));
 }
 
 /** Compact h/m/s for live timer UI. */

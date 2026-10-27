@@ -7,6 +7,7 @@ import { sessionFingerprint } from "@/lib/domain/sessionFingerprint";
 import { ActiveTimerBanner } from "./ActiveTimerBanner";
 import { FocusList } from "./FocusList";
 import { RecentFocusShortcuts } from "./RecentFocusShortcuts";
+import { useServerClockOffset } from "./useServerClockOffset";
 
 /** How often to pull the shared timer from the server. */
 const POLL_MS = 2500;
@@ -32,6 +33,7 @@ export function HomeTimingSection({
   recentShortcuts,
 }: Props) {
   const router = useRouter();
+  const clockOffsetMs = useServerClockOffset();
   const [liveSession, setLiveSession] = useState<ActiveSessionRow | null>(
     initialSession,
   );
@@ -130,6 +132,7 @@ export function HomeTimingSection({
           key={`${liveSession.focus_id}:${liveSession.start_at}`}
           session={liveSession}
           focuses={focuses}
+          clockOffsetMs={clockOffsetMs}
         />
       ) : null}
       <RecentFocusShortcuts

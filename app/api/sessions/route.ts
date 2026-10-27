@@ -5,16 +5,24 @@ import {
   stopSession,
 } from "@/lib/db/sessions";
 
+/**
+ * Every response carries `serverNow` so clients can anchor their local clock
+ * to the server (`lib/domain/serverClock`). Timers compare a client reading
+ * against a server-written `start_at`, so an unsynced client clock would
+ * otherwise show a permanently offset elapsed time.
+ */
+function noStoreHeaders(): HeadersInit {
+  return {
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    Pragma: "no-cache",
+  };
+}
+
 export async function GET() {
   const session = await getActiveSessionForUser();
   return NextResponse.json(
-    { ok: true, session },
-    {
-      headers: {
-        "Cache-Control": "no-store, no-cache, must-revalidate",
-        Pragma: "no-cache",
-      },
-    },
+    { ok: true, session, serverNow: new Date().toISOString() },
+    { headers: noStoreHeaders() },
   );
 }
 
@@ -51,7 +59,10 @@ export async function POST(request: Request) {
       const status = result.error === "Not signed in" ? 401 : 400;
       return NextResponse.json(result, { status });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(
+      { ...result, serverNow: new Date().toISOString() },
+      { headers: noStoreHeaders() },
+    );
   }
 
   if (action === "start") {
@@ -78,7 +89,10 @@ export async function POST(request: Request) {
             : 400;
       return NextResponse.json(result, { status });
     }
-    return NextResponse.json(result);
+    return NextResponse.json(
+      { ...result, serverNow: new Date().toISOString() },
+      { headers: noStoreHeaders() },
+    );
   }
 
   return NextResponse.json(

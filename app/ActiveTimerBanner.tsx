@@ -3,23 +3,33 @@
 import { useEffect, useState } from "react";
 import type { ActiveSessionRow, FocusRow } from "@/lib/db/types";
 import {
-  elapsedMs,
   formatElapsed,
+  liveElapsedMs,
   staleOpenSessionHint,
 } from "@/lib/domain/elapsedDisplay";
+import { serverNowFrom } from "@/lib/domain/serverClock";
 
 type Props = {
   session: ActiveSessionRow;
   focuses: FocusRow[];
+  /** Client → server clock offset, so both readings share one clock. */
+  clockOffsetMs: number;
 };
 
-export function ActiveTimerBanner({ session, focuses }: Props) {
+export function ActiveTimerBanner({
+  session,
+  focuses,
+  clockOffsetMs,
+}: Props) {
   const [now, setNow] = useState(() => new Date());
   const startAt = new Date(session.start_at);
   const name =
     focuses.find((f) => f.id === session.focus_id)?.name ?? "Focus";
-  const elapsed = formatElapsed(elapsedMs(startAt, now));
-  const staleHint = staleOpenSessionHint(startAt, now);
+  const elapsed = formatElapsed(liveElapsedMs(startAt, now, clockOffsetMs));
+  const staleHint = staleOpenSessionHint(
+    startAt,
+    serverNowFrom(now, clockOffsetMs),
+  );
 
   useEffect(() => {
     setNow(new Date());
